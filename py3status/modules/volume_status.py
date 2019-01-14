@@ -22,9 +22,9 @@ Configuration parameters:
     device: Device to use. Defaults value is backend dependent
         (default None)
     format: Format of the output.
-        (default '[\?if=is_input 😮|♪]: {percentage}%')
+        (default '{device} [\?if=is_input 😮|♪]: {percentage}%')
     format_muted: Format of the output when the volume is muted.
-        (default '[\?if=is_input 😶|♪]: muted')
+        (default '{device} [\?if=is_input 😶|♪]: muted')
     is_input: Is this an input device or an output device?
         (default False)
     max_volume: Allow the volume to be increased past 100% if available.
@@ -281,8 +281,8 @@ class Py3status:
     channel = None
     command = None
     device = None
-    format = u'[\?if=is_input 😮|♪]: {percentage}%'
-    format_muted = u'[\?if=is_input 😶|♪]: muted'
+    format = u'{device} [\?if=is_input 😮|♪]: {percentage}%'
+    format_muted = u'{device} [\?if=is_input 😶|♪]: muted'
     is_input = False
     max_volume = 120
     thresholds = [(0, 'bad'), (20, 'degraded'), (50, 'good')]
@@ -348,8 +348,8 @@ class Py3status:
         return self.py3.threshold_get_color(string)
 
     # return the format string formatted with available variables
-    def _format_output(self, format, percentage):
-        text = self.py3.safe_format(format, {'percentage': percentage})
+    def _format_output(self, device, format, percentage):
+        text = self.py3.safe_format(format, {'device': device, 'percentage': percentage})
         return text
 
     def current_volume(self):
@@ -364,7 +364,8 @@ class Py3status:
             color = self._perc_to_color(perc)
 
         # format the output
-        text = self._format_output(self.format_muted
+        text = self._format_output(self.backend.get_default_device(),
+                                   self.format_muted
                                    if muted else self.format, perc)
         # create response dict
         response = {
